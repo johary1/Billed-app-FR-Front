@@ -29,7 +29,9 @@ describe("Given I am connected as an employee", () => {
       window.onNavigate(ROUTES_PATH.Bills);
       await waitFor(() => screen.getByTestId("icon-window"));
       const windowIcon = screen.getByTestId("icon-window");
-      //to-do write expect expression
+      // check icon has class with highlighted state
+      console.log("here" + windowIcon.classList.contains("active-icon"));
+      expect(windowIcon.classList.contains("active-icon"));
     });
     test("Then bills should be ordered from earliest to latest", () => {
       //convert date format for bills
