@@ -3,12 +3,13 @@
  */
 
 import { screen, waitFor } from "@testing-library/dom";
+import userEvent from "@testing-library/user-event";
 import BillsUI from "../views/BillsUI.js";
 import { bills } from "../fixtures/bills.js";
 import { ROUTES_PATH } from "../constants/routes.js";
 import { localStorageMock } from "../__mocks__/localStorage.js";
-
 import router from "../app/Router.js";
+import Bills from "../containers/Bills";
 
 describe("Given I am connected as an employee", () => {
   describe("When I am on Bills Page", () => {
@@ -54,6 +55,71 @@ describe("Given I am connected as an employee", () => {
       console.log(datesSorted);
       console.log(dates);
       expect(dates).toEqual(datesSorted);
+    });
+
+    test("I click on eye icon to open modal", async () => {
+      const html = BillsUI({ data: bills });
+      document.body.innerHTML = html;
+
+      const firestore = null;
+
+      const allBills = new Bills({
+        document,
+        onNavigate,
+        firestore,
+        localStorage: window.localStorage,
+      });
+
+      $.fn.modal = jest.fn();
+
+      const eye = screen.getAllByTestId("icon-eye")[0];
+
+      // Mock function handleClickIconEye
+      const handleClickIconEye = jest.fn(() =>
+        allBills.handleClickIconEye(eye)
+      );
+
+      // Add Event and fire
+      eye.addEventListener("click", handleClickIconEye);
+      userEvent.click(eye);
+
+      expect(handleClickIconEye).toHaveBeenCalled();
+      const modale = document.getElementsByClassName("modal");
+      expect(modale).toBeTruthy();
+    });
+
+    describe("New bill page", () => {
+      test("displays 'Nouvelle note de frais' button", () => {
+        // Set up test data
+        const html = BillsUI({ data: bills });
+        document.body.innerHTML = html;
+
+        // Call the function
+        $.fn.btn = jest.fn();
+        const btn = document.getElementsByClassName("form-newbill-container");
+
+        // Check that the button is displayed
+        expect(btn).toBeTruthy();
+      });
+
+      test("clicking 'Nouvelle note de frais' button calls onNavigate with correct argument", () => {
+        // Set up test data
+        const onNavigateMock = jest.fn();
+        const createBill = {
+          handleClickNewBill: function () {
+            this.onNavigate(ROUTES_PATH["NewBill"]);
+          },
+          onNavigate: onNavigateMock,
+        };
+
+        // Call the function
+        createBill.handleClickNewBill();
+
+        // Check that onNavigate is called with the correct argument
+        expect(createBill.onNavigate).toHaveBeenCalledWith(
+          ROUTES_PATH["NewBill"]
+        );
+      });
     });
   });
 });
