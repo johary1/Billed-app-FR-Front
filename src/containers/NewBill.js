@@ -17,35 +17,36 @@ export default class NewBill {
     this.billId = null;
     new Logout({ document, localStorage, onNavigate });
   }
+
   handleChangeFile = (e) => {
     e.preventDefault();
     const file = this.document.querySelector(`input[data-testid="file"]`)
       .files[0];
     const filePath = e.target.value.split(/\\/g);
     const fileName = filePath[filePath.length - 1];
-    console.log(fileName);
-    // get extension
-    const fileExtension = fileName.split(".").pop();
-    console.log(fileExtension);
-    //define extensions files accepted
+
+    // Call helper functions to handle file extension validation and form data creation
+    //const fileExtension = this.getFileExtension(fileName);
     const allowedExtensions = /(\.jpeg|\.jpg|\.png)$/i;
-    const errorExtensions = document.querySelector("small");
-    console.log(errorExtensions);
+    const errorExtensions = this.getErrorElement();
 
     if (!allowedExtensions.exec(fileName)) {
-      //display error to user if not allowed extension
-      errorExtensions.innerHTML =
-        "<p>Type de fichier non valide.</br>Format acceptés: jpeg, jpg ou png.</p>";
+      // Display error to user if not allowed extension
+      this.displayError(
+        errorExtensions,
+        "Type de fichier non valide.</br>Format acceptés: jpeg, jpg ou png."
+      );
       e.target.value = "";
       return;
     } else {
-      errorExtensions.innerHTML = "";
+      this.clearError(errorExtensions);
     }
-    const formData = new FormData();
-    const email = JSON.parse(localStorage.getItem("user")).email;
-    formData.append("file", file);
+
+    const formData = this.createFormData(file, fileName);
+    const email = this.getUserEmail();
     formData.append("email", email);
 
+    // Call store's create method to upload file
     this.store
       .bills()
       .create({
@@ -62,6 +63,35 @@ export default class NewBill {
       })
       .catch((error) => console.error(error));
   };
+
+  // Helper functions
+  getFileExtension = (fileName) => {
+    return fileName.split(".").pop();
+  };
+
+  getErrorElement = () => {
+    return document.querySelector("small");
+  };
+
+  displayError = (errorElement, errorMessage) => {
+    errorElement.innerHTML = `<p>${errorMessage}</p>`;
+  };
+
+  clearError = (errorElement) => {
+    errorElement.innerHTML = "";
+  };
+
+  createFormData = (file, fileName) => {
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("name", fileName);
+    return formData;
+  };
+
+  getUserEmail = () => {
+    return JSON.parse(localStorage.getItem("user")).email;
+  };
+
   handleSubmit = (e) => {
     e.preventDefault();
     console.log(
