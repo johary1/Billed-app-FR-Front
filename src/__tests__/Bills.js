@@ -34,21 +34,19 @@ describe("Given I am connected as an employee", () => {
       await waitFor(() => screen.getByTestId("icon-window"));
       const windowIcon = screen.getByTestId("icon-window");
       // check icon has class with highlighted state
-      console.log("here" + windowIcon.classList.contains("active-icon"));
+      //console.log("here" + windowIcon.classList.contains("active-icon"));
       expect(windowIcon.classList.contains("active-icon"));
     });
 
     test("Then bills should be ordered from earliest to latest", () => {
-      document.body.innerHTML = BillsUI({
-        // use sort method to order bills
-        data: bills.sort((a, b) => (a.date < b.date ? 1 : -1)),
-      });
+      bills.sort((a, b) => new Date(a.date) - new Date(b.date));
+      document.body.innerHTML = BillsUI({ data: bills });
       const dates = screen
         .getAllByText(
           /^(19|20)\d\d[- /.](0[1-9]|1[012])[- /.](0[1-9]|[12][0-9]|3[01])$/i
         )
         .map((a) => a.innerHTML);
-      const antiChrono = (a, b) => (a < b ? 1 : -1);
+      const antiChrono = (a, b) => (a < b ? -1 : 1);
       const datesSorted = [...dates].sort(antiChrono);
       expect(dates).toEqual(datesSorted);
       //console.log(dates);

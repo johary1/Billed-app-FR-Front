@@ -1,7 +1,13 @@
 import { formatDate, formatStatus } from "./format.js";
+
 const formatDocument = (snapshot) => {
   console.log(snapshot);
-  const bills = snapshot.map((doc) => {
+
+  const sortedSnapshot = snapshot.sort(
+    (a, b) => new Date(b.date) - new Date(a.date)
+  );
+
+  const bills = sortedSnapshot.map((doc) => {
     try {
       return {
         ...doc,
@@ -9,8 +15,6 @@ const formatDocument = (snapshot) => {
         status: formatStatus(doc.status),
       };
     } catch (e) {
-      // if for some reason, corrupted data was introduced, we manage here failing formatDate function
-      // log the error and return unformatted date in that case
       console.log(e, "for", doc);
       return {
         ...doc,
@@ -19,8 +23,9 @@ const formatDocument = (snapshot) => {
       };
     }
   });
+
   console.log("length", bills.length);
   return bills;
 };
-/* used in Bills.js in both containers and _tests_ folders to format data */
+
 export default formatDocument;
